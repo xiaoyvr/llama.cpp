@@ -2021,6 +2021,7 @@ ggml_cgraph * llama_kv_cache::build_graph_shift(llm_graph_result * res, llama_co
 
     inp->k_shift = ggml_new_tensor_1d(ctx, GGML_TYPE_I32, (int64_t) get_size()*n_stream);
     ggml_set_input(inp->k_shift);
+    ggml_set_name(inp->k_shift, "inp_k_shift");
 
     inp->k_rot = build_input_k_rot(ctx);
 
