@@ -234,7 +234,6 @@ struct llama_layer_nextn {
     struct ggml_tensor * shared_head_head_in_s = nullptr;
     struct ggml_tensor * shared_head_norm      = nullptr;
 
-    // qwen4exp: the MTP block collapses its hyper-connection streams with its own mixer
     struct ggml_tensor * hc_head_norm          = nullptr;
     struct ggml_tensor * hc_head_down          = nullptr;
     struct ggml_tensor * hc_head_up            = nullptr;
@@ -857,6 +856,12 @@ struct llama_model_base : public llama_model {
     void load_arch_hparams(llama_model_loader & ml) override = 0;
     void load_arch_tensors(llama_model_loader & ml) override = 0;
     std::unique_ptr<llm_graph_context> build_arch_graph(const llm_graph_params & params) const override = 0;
+
+    // --lazy-mode on-direct: read the rows of a lazy tensor with explicit
+    // pread()s instead of demand-faulting them in through the mmap. Call once
+    // per lazy tensor after creating it; returns null if the platform cannot
+    // serve direct reads (the tensor then stays on the lazy mmap path).
+
 };
 
 const char * llm_type_name(llm_type type);
