@@ -1338,8 +1338,8 @@ static __global__ void mul_mat_q_routed_compact(
     }
 }
 
-template <ggml_type type, int J, bool fallback>
-__launch_bounds__(ggml_cuda_mmq_get_nthreads(type, J, fallback)/2, 1)
+template <ggml_type type, int J, bool fallback, ggml_prec prec_src1 = GGML_PREC_Q8>
+__launch_bounds__(ggml_cuda_mmq_get_nthreads(type, J, fallback, prec_src1)/2, 1)
 static __global__ void mul_mat_q_stream_k_fixup(
         const int32_t * __restrict__ ids_dst, const int32_t * __restrict__ expert_bounds, float * __restrict__ dst,
         float * __restrict__ tmp_last_tile, const uint3 blocks_per_ne00, const int nrows_x, const int ncols_dst,

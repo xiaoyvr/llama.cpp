@@ -153,7 +153,17 @@ llama_context::llama_context(
         cparams.ctx_other = params.ctx_other;
     }
 
-    if (model.arch == LLM_ARCH_EAGLE3 || model.arch == LLM_ARCH_DFLASH || model.arch == LLM_ARCH_QWEN4EXP) {
+    if (model.arch == LLM_ARCH_EAGLE3 || model.arch == LLM_ARCH_DFLASH) {
+        if (model.tok_embd == nullptr || model.output == nullptr) {
+            if (params.ctx_other == nullptr) {
+                throw std::runtime_error(model.arch_name() + " requires ctx_other to be set (this warning is normal during memory fitting)");
+            }
+            cparams.ctx_other = params.ctx_other;
+        }
+    }
+
+    if (model.arch == LLM_ARCH_QWEN4EXP) {
+        // a shared MTP draft head (--mtp-shared-embd) borrows the target's token embedding and output
         if (model.tok_embd == nullptr || model.output == nullptr) {
             if (params.ctx_other == nullptr) {
                 throw std::runtime_error(model.arch_name() + " requires ctx_other to be set (this warning is normal during memory fitting)");
@@ -1177,6 +1187,7 @@ size_t llama_context::get_sampled_probs_count(int32_t idx) {
     }
 }
 
+
 void llama_context::attach_threadpool(
            ggml_threadpool_t threadpool,
            ggml_threadpool_t threadpool_batch) {
@@ -1411,7 +1422,12 @@ llm_graph_result * llama_context::process_ubatch(const llama_ubatch & ubatch, ll
     if (!graph_reuse_disable && gf_res_prev_active == res && res->can_reuse(gparams)) {
         //LLAMA_LOG_DEBUG("%s: reusing previous graph\n", __func__);
 
-        ggml_backend_sched_prepare_inputs(sched.get());
+        // with pipeline parallelism, the previous graph_compute_async may still be running
+        // on the GPU. we must synchronize before set_inputs to avoid overwriting input tensors
+        // that the previous compute is still reading.
+        if (cparams.pipeline_parallel) {
+            ggml_backend_sched_synchronize(sched.get());
+        }
 
         n_reused++;
     } else {
@@ -1765,12 +1781,6 @@ int llama_context::decode(const llama_batch_ext & batch_inp) {
     }
 
     const uint32_t n_tokens_all  = balloc->get_n_tokens();
-
-    {   // warm the page cache for this batch's per-layer-embedding rows while the first chunk is on the GPU;
-        // posix_fadvise only, so a wrong prediction costs readahead and nothing else
-        extern void qwen4exp_ple_prefetch(const llama_model & model, const llama_token * tokens, int32_t n_tokens);
-        if (batch_inp.token && batch_inp.n_tokens >= 4096) { qwen4exp_ple_prefetch(model, batch_inp.token, batch_inp.n_tokens); }
-    }
     const uint32_t n_outputs_all = balloc->get_n_outputs();
 
     if (output_all) {
