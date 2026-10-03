@@ -162,6 +162,16 @@ llama_context::llama_context(
         }
     }
 
+    if (model.arch == LLM_ARCH_QWEN4EXP) {
+        // a shared MTP draft head (--mtp-shared-embd) borrows the target's token embedding and output
+        if (model.tok_embd == nullptr || model.output == nullptr) {
+            if (params.ctx_other == nullptr) {
+                throw std::runtime_error(model.arch_name() + " requires ctx_other to be set (this warning is normal during memory fitting)");
+            }
+            cparams.ctx_other = params.ctx_other;
+        }
+    }
+
     if (cparams.rope_scaling_type == LLAMA_ROPE_SCALING_TYPE_UNSPECIFIED) {
         cparams.rope_scaling_type = hparams.rope_scaling_type_train;
     }
