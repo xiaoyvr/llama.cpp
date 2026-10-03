@@ -1185,6 +1185,7 @@ struct common_init_result::impl {
 
 static const std::map<common_decision_type, std::string> COMMON_DECISION_TYPE_NAMES = {
     { COMMON_DECISION_TYPE_OPENJEV, "openjev" },
+    { COMMON_DECISION_TYPE_STARTLUX, "startlux" },
     { COMMON_DECISION_TYPE_LEV,     "lev"     },
     { COMMON_DECISION_TYPE_KEV,     "kev"     },
     { COMMON_DECISION_TYPE_NIMBLE,  "nimble"  },

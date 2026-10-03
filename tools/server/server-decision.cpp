@@ -65,7 +65,7 @@ void server_decision_context::init(const llama_model * model) {
         temperatures[key + prefix_temp.size()] = temp;
     }
 
-    if (model_type == COMMON_DECISION_TYPE_OPENJEV) {
+    if (model_type == COMMON_DECISION_TYPE_OPENJEV || model_type == COMMON_DECISION_TYPE_STARTLUX) {
         // one letter per option, each must be a single token
         const std::string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         for (const char c : letters) {
@@ -468,7 +468,7 @@ void server_decision_context::fill_task(
         server_task & task) const {
     const std::string prompt = render(state, questions, question, variant, files.size());
 
-    if (type == COMMON_DECISION_TYPE_OPENJEV || type == COMMON_DECISION_TYPE_LEV || type == COMMON_DECISION_TYPE_NIMBLE) {
+    if (type == COMMON_DECISION_TYPE_OPENJEV || type == COMMON_DECISION_TYPE_STARTLUX || type == COMMON_DECISION_TYPE_LEV || type == COMMON_DECISION_TYPE_NIMBLE) {
         // lev reads the ratings of a noul question at its first labels, not at the digits
         task.decision.labels.assign(labels.begin(), labels.begin() + n_outputs(question));
         if (!files.empty()) {

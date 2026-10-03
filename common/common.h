@@ -956,6 +956,7 @@ struct common_sampler;
 enum common_decision_type {
     COMMON_DECISION_TYPE_NONE,    // not a decision model
     COMMON_DECISION_TYPE_OPENJEV, // logits of one label token per option, read at the last prompt token
+    COMMON_DECISION_TYPE_STARTLUX, // same readout as OPENJEV, StartLux prompt format
     COMMON_DECISION_TYPE_LEV,     // same as openjev, noul is read from a rating scale
     COMMON_DECISION_TYPE_KEV,     // dot product of the hidden states of the last token and of one end token per option
     COMMON_DECISION_TYPE_NIMBLE,  // same as openjev, the prompt lists all the questions of the request
