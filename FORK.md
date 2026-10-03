@@ -117,9 +117,10 @@ git config rerere.autoupdate true
 ## Build + test after a sync
 
 ```bash
-# build (example flags for Strix Halo / gfx1151)
-cmake -S . -B build-main -G Ninja ... -DQWEN4EXP_QSA=ON
-cmake --build build-main --parallel --target llama-server
+# build (example flags for Strix Halo / gfx1151); the parent justfile builds
+# into ../strix-llama-serve/build/llama
+cmake -S . -B ../strix-llama-serve/build/llama -G Ninja ... -DQWEN4EXP_QSA=ON
+cmake --build ../strix-llama-serve/build/llama --parallel --target llama-server
 
 # decision-model checks: see scripts/startlux-patch-gguf.py and the local harness
 ```
