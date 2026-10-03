@@ -7,6 +7,13 @@ llama_add_compile_flags()
 # llama
 
 file(GLOB LLAMA_MODELS_SOURCES "models/*.cpp")
+option(QWEN4EXP_QSA "qwen4exp: use the strix qsa graph instead of upstream kpool" ON)
+if(QWEN4EXP_QSA)
+    list(FILTER LLAMA_MODELS_SOURCES EXCLUDE REGEX "/qwen4exp\\.cpp$")
+    add_compile_definitions(QWEN4EXP_QSA)
+else()
+    list(FILTER LLAMA_MODELS_SOURCES EXCLUDE REGEX "/qwen4exp_qsa\\.cpp$")
+endif()
 
 set(LLAMA_CORE_SOURCES
     llama.cpp
